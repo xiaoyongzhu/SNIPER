@@ -46,16 +46,23 @@ __version__ = '1.0.1'
 
 import json
 import datetime
+
 import time
 import matplotlib.pyplot as plt
 from matplotlib.collections import PatchCollection
 from matplotlib.patches import Polygon
+print("testcoco2")
 import numpy as np
+print("testcoco3")
 from skimage.draw import polygon
+print("testcoco4")
 import urllib
+print("testcoco5")
 import copy
+print("testcoco6")
 import itertools
 import mask
+
 import os
 
 class COCO:

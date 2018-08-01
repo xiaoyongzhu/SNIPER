@@ -1,0 +1,24 @@
+loading annotations into memory...
+Done (t=5.39s)
+creating index...
+index created!
+num_images 3103
+COCO_trainxview gt roidb loaded from ./data/xview_1280/cache/COCO_trainxview_gt_roidb.pkl
+append flipped images to roidb
+filtered 14 roidb entries: 6206 -> 6192
+add bounding box regression targets
+bbox target means:
+[[0. 0. 0. 0.]
+ [0. 0. 0. 0.]]
+[0. 0. 0. 0.]
+bbox target stdevs:
+[[0.1 0.1 0.2 0.2]
+ [0.1 0.1 0.2 0.2]]
+[0.1 0.1 0.2 0.2]
+Creating Iterator with 6192 Images
+Total number of extracted chips: 176440
+Done!
+The Iterator has 176448 samples!
+Initializing the model...
+Optimizer params: {'wd': 0.01, 'lr_scheduler': <train_utils.lr_scheduler.WarmupMultiBatchScheduler object at 0x7fe495e5e950>, 'multi_precision': True, 'learning_rate': 3e-05, 'rescale_grad': 1.0, 'clip_gradient': None, 'momentum': 0.9}
+aaa

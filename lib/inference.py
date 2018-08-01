@@ -417,7 +417,7 @@ def proposal_scale_worker(arguments):
     mod.init_params(arg_params=arg_params, aux_params=aux_params)
     # Create Tester
     tester = Tester(mod, imdb, roidb, test_iter, cfg=config, batch_size=nbatch)
-    return tester.extract_proposals(vis=(vis and config.TEST.VISUALIZE_INTERMEDIATE_SCALES),
+    return tester.extract_proposals(vis=(vis and config.TEST.VISUALIZE_INTERMEDIATE_SCALES),  n_proposals=config.TEST.RPN_POST_NMS_TOP_N,
         cache_name='props_scale_{}x{}'.format(scale[0],scale[1]))
 
 

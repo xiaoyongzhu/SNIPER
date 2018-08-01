@@ -5,6 +5,8 @@
 # by Mahyar Najibi and Bharat Singh
 # --------------------------------------------------------------
 import init
+print("1")
+from skimage.draw import polygon
 import matplotlib
 matplotlib.use('Agg')
 import os
@@ -14,21 +16,28 @@ os.environ['MXNET_CUDNN_AUTOTUNE_DEFAULT'] = '2'
 from iterators.MNIteratorE2E import MNIteratorE2E
 import sys
 sys.path.insert(0, 'lib')
-from symbols.faster import *
+from symbols.faster import resnet_mx_50_e2e,resnet_mx_101_e2e
 from configs.faster.default_configs import config, update_config, update_config_from_list
+print("2")
 import mxnet as mx
+print("3")
 from train_utils import metric
 from train_utils.utils import get_optim_params, get_fixed_param_names, create_logger, load_param
 from iterators.PrefetchingIter import PrefetchingIter
+print("4")
 
-from data_utils.load_data import load_proposal_roidb, merge_roidb, filter_roidb
+print("5")
 from bbox.bbox_regression import add_bbox_regression_targets
+print("6")
 import argparse
-
+print("7")
+from data_utils.load_data import load_proposal_roidb, merge_roidb, filter_roidb
+# ,
+print("8")
 def parser():
     arg_parser = argparse.ArgumentParser('SNIPER training module')
     arg_parser.add_argument('--cfg', dest='cfg', help='Path to the config file',
-    							default='configs/faster/sniper_res101_e2e.yml',type=str)
+    							default='configs/faster/sniper_res_e2e.yml',type=str)
     arg_parser.add_argument('--display', dest='display', help='Number of epochs between displaying loss info',
                             default=100, type=int)
     arg_parser.add_argument('--momentum', dest='momentum', help='BN momentum', default=0.995, type=float)
@@ -50,6 +59,7 @@ if __name__ == '__main__':
     context = [mx.gpu(int(gpu)) for gpu in config.gpus.split(',')]
     nGPUs = len(context)
     batch_size = nGPUs * config.TRAIN.BATCH_IMAGES
+    print("batch size is", batch_size)
 
     if not os.path.isdir(config.output_path):
         os.mkdir(config.output_path)
@@ -71,7 +81,7 @@ if __name__ == '__main__':
 
     print('Creating Iterator with {} Images'.format(len(roidb)))
     train_iter = MNIteratorE2E(roidb=roidb, config=config, batch_size=batch_size, nGPUs=nGPUs,
-                               threads=config.TRAIN.NUM_THREAD, pad_rois_to=400)
+                               threads=config.TRAIN.NUM_THREAD, pad_rois_to=400) #, crop_size=(config.TRAIN.SCALES[-1],config.TRAIN.SCALES[-1]))
     print('The Iterator has {} samples!'.format(len(train_iter)))
 
     # Creating the Logger

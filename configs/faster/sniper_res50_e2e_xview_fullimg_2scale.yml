@@ -1,0 +1,227 @@
+# --------------------------------------------------------------
+# SNIPER: Efficient Multi-Scale Training
+# Licensed under The Apache-2.0 License [see LICENSE for details]
+# by Mahyar Najibi, Bharat Singh
+# --------------------------------------------------------------
+---
+MXNET_VERSION: "mxnet"
+output_path: "./output/sniper_res50_bn"
+symbol: resnet_mx_50_e2e
+gpus: '0,1,2,3'
+CLASS_AGNOSTIC: true
+default:
+  kvstore: device
+network:
+  pretrained: "./data/pretrained_model/resnet-50"
+  pretrained_epoch: 0
+  PIXEL_MEANS:
+  - 103.939
+  - 116.779
+  - 123.68
+  RPN_FEAT_STRIDE: 16
+  FIXED_PARAMS:
+  - conv0
+  - bn0
+  - stage1
+
+  ANCHOR_RATIOS:
+  - 0.25
+  - 0.5
+  - 1
+  - 2
+  - 4
+  ANCHOR_SCALES:
+  - 2
+  - 4
+  - 7
+  - 10
+  - 13
+  - 16
+  - 24
+  NUM_ANCHORS: 35
+dataset:
+  NUM_CLASSES: 61
+  dataset: coco
+  dataset_path: "./data/xview_full_all/"
+  image_set: trainxview
+  root_path: "./data/xview_full_all/"
+  test_image_set: valxview
+  proposal: rpn
+TRAIN:
+  ## CHIP GENERATION PARAMS
+  # Whether to use C++ or python code for chip generation
+  CPP_CHIPS: true
+  # How many parts the dataset should be divided to for parallel chip generation
+  # This is used to keep the memory limited
+  CHIPS_DB_PARTS: 20
+
+  USE_NEG_CHIPS: true
+  # Multi-processing params
+  # These parameters are used for parallel chip generation, NMS, etc.
+  # Please consider adjusting them for your system
+  NUM_PROCESS: 48
+  NUM_THREAD: 24
+
+  # Whether to train with segmentation mask
+  WITH_MASK: false
+
+  # Training scales
+  # The last scale (or the only scale) should be the desired max resolution in pixels
+  # Other scales should be scaling coefficients
+  SCALES:
+    # we will use testing scale of 3000 and 1300, so the value would be 
+  - 2.782
+  - 512.0
+
+  # Valid ranges in each scale
+  VALID_RANGES:
+    # following the original heuristic values
+    # originally the image was 170*170 and the the cap was 80. Now we changed it to 222*222 and the cap should be changed to 110 correspondingly
+  - !!python/tuple [-1,90]
+  # - !!python/tuple [32,150]
+  - !!python/tuple [80,-1]
+
+
+  lr: 0.001 #0.002 #0.0005
+  lr_step: '18.33'
+  warmup: true
+  fp16: true
+  warmup_lr: 0.0005 #0.00005
+  wd: 0.0001
+  scale: 100.0
+  warmup_step: 1000 #4000 #1000
+  begin_epoch: 0
+  end_epoch: 20
+
+  # whether flip image
+  FLIP: true
+  # whether shuffle image
+  SHUFFLE: true
+  # whether use OHEM
+  ENABLE_OHEM: true
+  # size of images for each device, 2 for rcnn, 1 for rpn and e2e
+  BATCH_IMAGES: 16
+  # e2e changes behavior of anchor loader and metric
+  END2END: true
+  # R-CNN
+  # rcnn rois batch size
+  BATCH_ROIS: -1
+  BATCH_ROIS_OHEM: 256
+  # rcnn rois sampling params
+  FG_THRESH: 0.5
+  BG_THRESH_HI: 0.5
+  BG_THRESH_LO: 0.0
+  # rcnn bounding box regression params
+  BBOX_REGRESSION_THRESH: 0.5
+  BBOX_WEIGHTS:
+  - 1.0
+  - 1.0
+  - 1.0
+  - 1.0
+
+  # RPN anchor loader
+  # rpn anchors batch size
+  RPN_BATCH_SIZE: 256
+  # rpn anchors sampling params
+  RPN_FG_FRACTION: 0.5
+  RPN_POSITIVE_OVERLAP: 0.5
+  RPN_NEGATIVE_OVERLAP: 0.4
+  RPN_CLOBBER_POSITIVES: false
+  # rpn bounding box regression params
+  RPN_BBOX_WEIGHTS:
+  - 1.0
+  - 1.0
+  - 1.0
+  - 1.0
+  RPN_POSITIVE_WEIGHT: -1.0
+  # used for end2end training
+  # RPN proposal
+  CXX_PROPOSAL: false
+  RPN_MIN_SIZE: 0
+  # approximate bounding box regression
+  BBOX_NORMALIZATION_PRECOMPUTED: true
+  BBOX_MEANS:
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  BBOX_STDS:
+  - 0.1
+  - 0.1
+  - 0.2
+  - 0.2
+TEST:
+  # Maximum number of detections per image
+  # Set to -1 to disable
+  MAX_PER_IMAGE: -1
+
+  # Whether to do multi-scale inference
+  SCALES:
+  #- !!python/tuple [1400, 2000]
+  #- !!python/tuple [800, 1280]
+  #- !!python/tuple [480, 512]
+  # we are using a base resolution of 2600*2600. This will solve the edge problem in most of the cases
+  - !!python/tuple [2400, 2400]
+  #- !!python/tuple [1728, 1728]
+  - !!python/tuple [1280, 1280]
+  # Number of images per gpu for each scale
+  BATCH_IMAGES:
+  - 1
+  - 1
+  #- 4
+  # Number of concurrent jobs used for inference
+  # if greater than 1, the roidb is distributed over
+  # concurrent jobs to increase throughput
+  CONCURRENT_JOBS: 1
+
+  # Ranges to specify valid proposal length
+  # in each of the test scale, square area
+  # would be computed based on the lengths
+  # to invalidate, -1 means unbounded, use
+  # -1 everywhere if you want to have all proposals
+  VALID_RANGES:
+  - !!python/tuple [-1,95]
+  #- !!python/tuple [32,180]
+  - !!python/tuple [75,-1]
+  #- !!python/tuple [-1,180]
+  #- !!python/tuple [20,999]
+
+  # Use rpn to generate proposal
+  HAS_RPN: true
+
+  # RPN Parameters
+  RPN_NMS_THRESH: 0.7
+  RPN_PRE_NMS_TOP_N: 30000
+  RPN_POST_NMS_TOP_N: 3000
+  RPN_MIN_SIZE: 3
+
+  # NMS Parameters
+  # Whether to apply NMS based on threshold or sigma
+  NMS: -1 #0.45
+  NMS_SIGMA: 0.55
+
+  # Which epoch of the training be used for testing
+  TEST_EPOCH: "6"
+
+  # VISUALIZATION CONFIG
+  VISUALIZATION_PATH: './debug/visualization'
+  # Whether to visualize all intermediate scales
+  # before aggregation (when doing multi-scale inference)
+  # If False, only final detections are saved to 
+  # VISUALIZATION_PATH
+  VISUALIZE_INTERMEDIATE_SCALES: false
+
+  # PROPOSAL EXTRACTION FLAGS
+  # If true only would extract proposals
+  EXTRACT_PROPOSALS: true
+
+  # The folder path to be used for saving proposals
+  PROPOSAL_SAVE_PATH: 'output/proposals'
+
+  # Number of proposals extracted per scale
+  # SCALES and BATCH_IMAGES above would be used to
+  # Specify scales and number of images per batch for
+  # each scale, no valid ranges would be applied for
+  # aggregating proposals
+  # N_PROPOSAL_PER_SCALE: 300
+

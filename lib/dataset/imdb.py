@@ -85,8 +85,9 @@ class IMDB(object):
         if os.path.isfile(nms_cache_file):
             print('Reading cached proposals after ***NMS**** from {}'.format(nms_cache_file))
             with open(nms_cache_file,'rb') as file:
-                [boxes,maps] = cPickle.load(file)
-
+                x = cPickle.load(file)
+                # print(x)
+                [boxes,maps] = x
             print('Done!')
         else:
             print rpn_file
@@ -152,7 +153,7 @@ class IMDB(object):
         self.num_images = len(gt_roidb)
         assert len(box_list) == self.num_images, 'number of boxes matrix must match number of images'
         roidb = []
-        stats = np.zeros(81)
+        stats = np.zeros(61)
         for i in range(self.num_images):
             roi_rec = dict()
             roi_rec['image'] = gt_roidb[i]['image']

@@ -8,6 +8,7 @@ import init
 import matplotlib
 matplotlib.use('Agg')
 from symbols.faster import *
+from symbols.faster import resnet_mx_50_e2e,resnet_mx_101_e2e
 from configs.faster.default_configs import config, update_config, update_config_from_list
 from data_utils.load_data import load_proposal_roidb
 import mxnet as mx
@@ -53,14 +54,19 @@ def main():
     logger, output_path = create_logger(config.output_path, args.cfg, config.dataset.image_set)
     print(output_path)
     model_prefix = os.path.join(output_path, args.save_prefix)
-    arg_params, aux_params = load_param(model_prefix, config.TEST.TEST_EPOCH,
-                                        convert=True, process=True)
 
-    sym_inst = eval('{}.{}'.format(config.symbol, config.symbol))
-    if config.TEST.EXTRACT_PROPOSALS:
-        imdb_proposal_extraction_wrapper(sym_inst, config, imdb, roidb, context, arg_params, aux_params, args.vis)
-    else:
-        imdb_detection_wrapper(sym_inst, config, imdb, roidb, context, arg_params, aux_params, args.vis)
+    individual_epoch_list = str(config.TEST.TEST_EPOCH).split(",")
+    for individual_epoch in individual_epoch_list:
+        print("output for epoch", individual_epoch)
+        arg_params, aux_params = load_param(model_prefix, int(individual_epoch),
+                                            convert=True, process=True)
+
+        sym_inst = eval('{}.{}'.format(config.symbol, config.symbol))
+        if config.TEST.EXTRACT_PROPOSALS:
+            print("trying to extract proposals")
+            imdb_proposal_extraction_wrapper(sym_inst, config, imdb, roidb, context, arg_params, aux_params, args.vis)
+        else:
+            imdb_detection_wrapper(sym_inst, config, imdb, roidb, context, arg_params, aux_params, args.vis)
 
 if __name__ == '__main__':
     main()

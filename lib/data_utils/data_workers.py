@@ -52,6 +52,7 @@ class im_worker(object):
         imp = data[0]
         flipped = data[2]
         pixel_means = self.cfg.network.PIXEL_MEANS
+        # print(imp)
         im = cv2.imread(imp, cv2.IMREAD_COLOR)
         # Flip the image
         if flipped:
@@ -142,6 +143,8 @@ class anchor_worker(object):
         labels.fill(-1)
         total_anchors = int(self.K * self.num_anchors)
 
+        # print("len of gt_boxes 3", len(gt_boxes))
+
         gt_boxes[:, 0] -= cur_crop[0]
         gt_boxes[:, 2] -= cur_crop[0]
         gt_boxes[:, 1] -= cur_crop[1]
@@ -193,7 +196,7 @@ class anchor_worker(object):
             if len(ids) > 0:
                 gt_boxes = gt_boxes[ids]
                 classes = classes[ids]
-
+        # print("len of gt_boxes 4", len(gt_boxes))
         agt_boxes = gt_boxes.copy()
         ids = filter_boxes(vgt_boxes, 10)
         if len(ids) > 0:
@@ -290,14 +293,19 @@ class anchor_worker(object):
         pids = np.where(bbox_weights == 1)
         bbox_targets = bbox_targets[pids]
 
-        fgt_boxes = -np.ones((100, 5))
-        if len(agt_boxes) > 0:
-            fgt_boxes[:min(len(agt_boxes), 100), :] = np.hstack((agt_boxes, classes))
+        fgt_boxes = -np.ones((self.max_n_gts, 5))
 
-        rval = [mx.nd.array(labels, dtype='float16'), bbox_targets, mx.nd.array(pids), mx.nd.array(fgt_boxes)]
-        if has_mask:
-            rval.append(mx.nd.array(encoded_polys))
-        return rval
+        if len(agt_boxes) <= self.max_n_gts:
+            if len(agt_boxes) > 0:
+                
+                fgt_boxes[:min(len(agt_boxes), self.max_n_gts), :] = np.hstack((agt_boxes, classes))
+
+            rval = [mx.nd.array(labels, dtype='float16'), bbox_targets, mx.nd.array(pids), mx.nd.array(fgt_boxes)]
+            if has_mask:
+                rval.append(mx.nd.array(encoded_polys))
+            return rval
+        else:
+            return None
 
 
 class chip_worker(object):

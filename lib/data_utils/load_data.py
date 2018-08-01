@@ -8,7 +8,7 @@ import numpy as np
 import os
 import cPickle
 import gc
-from dataset import *
+from dataset import imdb, coco
 
 def load_gt_roidb(dataset_name, image_set_name, root_path, dataset_path, result_path=None,
                   flip=False):

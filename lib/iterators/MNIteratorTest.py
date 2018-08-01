@@ -38,6 +38,11 @@ class MNIteratorTest(MNIteratorBase):
             ims.append([roidb[i]['image'], max_size ,roidb[i]['flipped']])
         im_info = np.zeros((n_batch, 3))
 
+        # single thread version
+        processed_list = []
+
+        # for im_instances in ims:
+        #     processed_list.append(self.im_worker.worker(im_instances))
         processed_list = self.thread_pool.map(self.im_worker.worker, ims)
         im_tensor = mx.nd.zeros((n_batch, 3, max_size[0], max_size[1]), dtype=np.float32)
         for i,p in enumerate(processed_list):
